@@ -34,13 +34,13 @@ void StartInit(void)
 
 void StartIt(void)
 {
-	HAL_UART_Receive_IT(&huart8, &m_uartPcu.rxByte, 1); // PCU
-    HAL_UART_Receive_IT(&huart3, &m_uartMnc.rxByte, 1); // MNC
-    HAL_UART_Receive_IT(&huart6, &m_uartReserve.rxByte, 1); // Reserve
-    HAL_UART_Receive_IT(&huart1, &m_uartOcu.rxByte, 1); // OCU
+	HAL_UART_Receive_IT(&huart8, &m_uartPcu.rxByte, 1); 
+    HAL_UART_Receive_IT(&huart3, &m_uartMnc.rxByte, 1); 
+    HAL_UART_Receive_IT(&huart6, &m_uartReserve.rxByte, 1); 
+    HAL_UART_Receive_IT(&huart1, &m_uartOcu.rxByte, 1); 
 
-    HAL_UART_Receive_IT(&huart4, &m_uartNdmcIns.rxByte, 1); // NDMC INS
-    HAL_UART_Receive_IT(&huart5, &m_uartNdmcGps.rxByte, 1); // NDMC GPS
+    HAL_UART_Receive_IT(&huart4, &m_uartNdmcIns.rxByte, 1); 
+    HAL_UART_Receive_IT(&huart5, &m_uartNdmcGps.rxByte, 1); 
 
 }
 void CalledFunction(void)
@@ -53,7 +53,7 @@ void CalledFunction(void)
 	  CheckRecvInsData();
 	  CheckRecvGpsData();
 
-	  // ?��?�� ?��?��?�� 처리
+	  
 	  ProcessPCU();
 	  ProcessMNC();
 	  ProcessReserve();
@@ -117,7 +117,7 @@ void ProcessPCU(void)
 /**
  * OCU에 전송할 패킷 생성. 내부 함수(ProcessPacket_PCU()에서 호출)
  */
-uint16_t MakeOcuPacket(char* outBuff)//outBuff널 체크 해야됨 //수정 완료 테스트 해야됨
+uint16_t MakeOcuPacket(char* outBuff)
 {
 
 	static uint8_t ackNumber = 0U;
@@ -148,7 +148,7 @@ uint16_t MakeOcuPacket(char* outBuff)//outBuff널 체크 해야됨 //수정 완�
         {
 			uint16_t crc = CalculateCRC((uint8_t*)outBuff, length);
 
-			// CRC를 문자열로 만들고 붙이기
+			
 			char strCrc[8];
 			(void)sprintf(strCrc, "*%04X\r\n", crc);
 			(void)strcat(outBuff, strCrc);
@@ -225,7 +225,7 @@ void ProcessPacket_PCU(const char* packet, const uint16_t packetSize) // 패킷 
 	}
 
 
-	// Burst message
+	
 	else if(strncmp(splittedData[0], "$KB", 3) == 0)
 	{
 		bool isEndPacket = false;
@@ -364,10 +364,10 @@ void ProcessMNC(void)
 
 		if(CheckChecksum(m_uartMnc.rxData, length) == true)
 		{
-			// PCU TX DMA 버퍼에 추가
+			
 			AddTransferData(TRANS_PCU, m_uartMnc.rxData, length);
 
-			// 데이터 처리
+			
 			ProcessPacket_MNC((char*)m_uartMnc.rxData);
 		}
 
@@ -572,10 +572,8 @@ void MakeAcuDataToPcu(void)
 }
 
 
-/**
- * NDMC INS에서 수신한 데이터 처리
- */
-void ProcessNdmcINS(void)
+
+void ProcessINS(void)
 {
 	// 0 ~ 360 계산용 (INS heading). 0번 인덱스가 최상위 비트
 	static const float_t ARR_DEGREE360[16] = {180.0F ,90.0F, 45.0F, 22.5F, 11.25F, 5.625F, 2.8125F, 1.40625F, 0.703125F, 0.351563F, 0.175781F, 0.087891F, 0.043945F, 0.021973F, 0.010986F, 0.005493F};
@@ -630,10 +628,8 @@ void ProcessNdmcINS(void)
 
 }
 
-/**
- * NDMC GPS에서 수신한 데이터 처리
- */
-void ProcessNdmcGPS(void)
+
+void ProcessGPS(void)
 {
 
 	static const float_t ARR_DEGREEGPS180Upper[16] = {-180.0F, 90.0F, 45.0F, 22.5F, 11.25F, 5.625F, 2.8125F, 1.40625F, 0.703125F, 0.351563F, 0.175782F, 0.087891F, 0.043946F, 0.021973F, 0.010987F, 0.005494F};
@@ -649,7 +645,7 @@ void ProcessNdmcGPS(void)
 		uint16_t longitudeUpper = (uint16_t)((m_uartNdmcGps.rxData[8] << 8U) | (m_uartNdmcGps.rxData[9]));
 		uint16_t longitudeLower = (uint16_t)((m_uartNdmcGps.rxData[10] << 8U) | (m_uartNdmcGps.rxData[11]));
 
-		// SHF-KORSATCOM Mast Ststus. 상위 2비트만 사용
+		
 		uint8_t satcomMast = (uint8_t)(m_uartNdmcGps.rxData[38] & 0xC0U);
 		// 2(1 0)=retracted, 1(0 1)=hoisted, 0(0 0)=intermediate position, 3(1 1)=not used
 		m_externalData.satComMastStatus = (uint8_t)(satcomMast >> 6U);
